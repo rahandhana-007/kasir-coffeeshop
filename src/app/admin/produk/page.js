@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import Navbar from '@/components/Navbar' 
 
 export default function ProdukPage() {
   const [products, setProducts] = useState([])
@@ -82,6 +83,8 @@ export default function ProdukPage() {
 
   return (
     <main className="min-h-screen bg-amber-50 p-6">
+         <Navbar />
+         <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-amber-900">📦 Manajemen Produk</h1>
         <button onClick={openTambah}
@@ -178,6 +181,7 @@ export default function ProdukPage() {
           </form>
         </div>
       )}
+      </div>
     </main>
   )
 }

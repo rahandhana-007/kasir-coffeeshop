@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import Navbar from '@/components/Navbar'
 
 export default function LaporanPage() {
   // Default: hari ini (format YYYY-MM-DD untuk input date)
@@ -49,6 +50,8 @@ export default function LaporanPage() {
 
   return (
     <main className="min-h-screen bg-amber-50 p-6">
+        <Navbar />
+      <div className="p-6">
       <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-amber-900">📊 Laporan Penjualan</h1>
         <input type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)}
@@ -155,6 +158,7 @@ export default function LaporanPage() {
           </div>
         </div>
       )}
+      </div>
     </main>
   )
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import Navbar from '@/components/Navbar'
 
 export default function KasirPage() {
   const router = useRouter()
@@ -30,11 +31,11 @@ export default function KasirPage() {
     fetchData()
   }, [])
 
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+  //async function handleLogout() {
+   // const supabase = createClient()
+    //await supabase.auth.signOut()
+    //router.push('/login')
+  //}
 
   // ============ FUNGSI-FUNGSI KERANJANG (BARU) ============
 
@@ -139,7 +140,7 @@ export default function KasirPage() {
     setShowPayment(false)
     setSaving(false)
   }
-  
+
   // Hitung total
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
 
@@ -150,15 +151,11 @@ export default function KasirPage() {
 
   return (
     <main className="min-h-screen bg-amber-50 flex">
+    <Navbar />
+      <div className="flex flex-1 overflow-hidden">
       {/* ==================== KIRI: MENU ==================== */}
       <div className="flex-1 p-6 overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-amber-900">☕ Kasir Coffee Shop</h1>
-          <button onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
-            Logout
-          </button>
-        </div>
+                <h1 className="text-2xl font-bold text-amber-900 mb-6">☕ Kasir Coffee Shop</h1>
 
         {/* Filter kategori */}
         <div className="flex gap-2 mb-6 flex-wrap">
@@ -375,6 +372,7 @@ export default function KasirPage() {
           </div>
         </div>
       )}
+      </div>
     </main>
   )
 }
