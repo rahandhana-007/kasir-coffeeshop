@@ -10,6 +10,9 @@ export default function KasirPage() {
   const [selectedCategory, setSelectedCategory] = useState('semua')
   const [loading, setLoading] = useState(true)
   const [cart, setCart] = useState([]) // ← BARU: state keranjang
+  const [showPayment, setShowPayment] = useState(false) // dialog bayar tampil/tidak
+  const [payAmount, setPayAmount] = useState('')        // uang yang diterima
+  const [saving, setSaving] = useState(false)           // sedang menyimpan?
 
   useEffect(() => {
     async function fetchData() {
@@ -63,6 +66,71 @@ export default function KasirPage() {
   // Hapus satu item langsung
   function removeItem(productId) {
     setCart((prev) => prev.filter((item) => item.id !== productId))
+  }
+
+  // Buat nomor invoice: INV-20260801-143025
+  function buatInvoice() {
+    const now = new Date()
+    const tgl = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const jam = now.toTimeString().slice(0, 8).replace(/:/g, '')
+    return `INV-${tgl}-${jam}`
+  }
+
+  async function simpanTransaksi() {
+    const bayar = parseInt(payAmount)
+    setSaving(true)
+    const supabase = createClient()
+
+    // Ambil user yang sedang login (untuk dicatat sebagai kasir)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // 1. Simpan header transaksi
+    const { data: trx, error } = await supabase
+      .from('transactions')
+      .insert({
+        invoice_number: buatInvoice(),
+        cashier_id: user.id,
+        total: total,
+        payment_amount: bayar,
+        change_amount: bayar - total,
+        payment_method: 'cash',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      alert('Gagal menyimpan transaksi: ' + error.message)
+      setSaving(false)
+      return
+    }
+
+    // 2. Simpan semua item keranjang
+    const items = cart.map((item) => ({
+      transaction_id: trx.id,
+      product_id: item.id,
+      product_name: item.name,
+      price: item.price,
+      quantity: item.qty,
+      subtotal: item.price * item.qty,
+    }))
+    const { error: itemError } = await supabase
+      .from('transaction_items')
+      .insert(items)
+
+    if (itemError) {
+      alert('Gagal menyimpan item: ' + itemError.message)
+      setSaving(false)
+      return
+    }
+
+    // 3. Sukses! Bersihkan semuanya
+    alert(
+      `✅ Transaksi berhasil!\n\nInvoice: ${trx.invoice_number}\nTotal: Rp ${total.toLocaleString('id-ID')}\nBayar: Rp ${bayar.toLocaleString('id-ID')}\nKembalian: Rp ${(bayar - total).toLocaleString('id-ID')}`
+    )
+    setCart([])
+    setPayAmount('')
+    setShowPayment(false)
+    setSaving(false)
   }
 
   // Hitung total
@@ -170,14 +238,84 @@ export default function KasirPage() {
               Rp {total.toLocaleString('id-ID')}
             </span>
           </div>
-          <button
+            <button
             disabled={cart.length === 0}
-            onClick={() => alert('Fitur bayar dibuat di tahap 7.3!')}
+            onClick={() => setShowPayment(true)}
             className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white py-3 rounded-xl font-bold text-lg">
             💵 Bayar
           </button>
         </div>
       </div>
+            {/* ==================== DIALOG PEMBAYARAN ==================== */}
+      {showPayment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-96 shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">💵 Pembayaran</h3>
+
+            <div className="bg-amber-50 rounded-lg p-4 mb-4">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Total belanja</span>
+                <span className="font-bold text-lg text-amber-800">
+                  Rp {total.toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
+
+            <label className="text-sm font-medium text-gray-600">Uang diterima</label>
+            <input
+              type="number"
+              autoFocus
+              value={payAmount}
+              onChange={(e) => setPayAmount(e.target.value)}
+              placeholder="Contoh: 50000"
+              className="w-full border-2 border-amber-300 rounded-lg p-3 text-xl font-bold mt-1 mb-2"
+            />
+
+            {/* Tombol uang cepat */}
+            <div className="flex gap-2 mb-4">
+              <button onClick={() => setPayAmount(String(total))}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-xs font-medium">
+                Uang Pas
+              </button>
+              {[20000, 50000, 100000].map((nominal) => (
+                <button key={nominal} onClick={() => setPayAmount(String(nominal))}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-xs font-medium">
+                  {nominal / 1000}rb
+                </button>
+              ))}
+            </div>
+
+            {/* Kembalian */}
+            {payAmount && parseInt(payAmount) >= total && (
+              <div className="flex justify-between bg-green-50 rounded-lg p-3 mb-4">
+                <span className="text-sm text-gray-600">Kembalian</span>
+                <span className="font-bold text-green-700">
+                  Rp {(parseInt(payAmount) - total).toLocaleString('id-ID')}
+                </span>
+              </div>
+            )}
+            {payAmount && parseInt(payAmount) < total && (
+              <p className="text-red-500 text-sm mb-4">
+                ⚠️ Uang kurang Rp {(total - parseInt(payAmount)).toLocaleString('id-ID')}
+              </p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowPayment(false); setPayAmount('') }}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 rounded-xl py-3 font-semibold">
+                Batal
+              </button>
+              <button
+                onClick={simpanTransaksi}
+                disabled={!payAmount || parseInt(payAmount) < total || saving}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-xl py-3 font-bold">
+                {saving ? 'Menyimpan...' : 'Konfirmasi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
