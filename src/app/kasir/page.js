@@ -13,6 +13,7 @@ export default function KasirPage() {
   const [showPayment, setShowPayment] = useState(false) // dialog bayar tampil/tidak
   const [payAmount, setPayAmount] = useState('')        // uang yang diterima
   const [saving, setSaving] = useState(false)           // sedang menyimpan?
+  const [receipt, setReceipt] = useState(null) // data struk transaksi terakhir
 
   useEffect(() => {
     async function fetchData() {
@@ -123,15 +124,20 @@ export default function KasirPage() {
       return
     }
 
-    // 3. Sukses! Bersihkan semuanya
-    alert(
-      `✅ Transaksi berhasil!\n\nInvoice: ${trx.invoice_number}\nTotal: Rp ${total.toLocaleString('id-ID')}\nBayar: Rp ${bayar.toLocaleString('id-ID')}\nKembalian: Rp ${(bayar - total).toLocaleString('id-ID')}`
-    )
+    
+    // 3. Sukses! Simpan data untuk struk, lalu bersihkan
+    setReceipt({
+      invoice: trx.invoice_number,
+      date: new Date().toLocaleString('id-ID'),
+      items: [...cart],
+      total: total,
+      bayar: bayar,
+      kembalian: bayar - total,
+    })
     setCart([])
     setPayAmount('')
     setShowPayment(false)
     setSaving(false)
-  }
 
   // Hitung total
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
@@ -311,6 +317,58 @@ export default function KasirPage() {
                 disabled={!payAmount || parseInt(payAmount) < total || saving}
                 className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-xl py-3 font-bold">
                 {saving ? 'Menyimpan...' : 'Konfirmasi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+            {/* ==================== DIALOG STRUK ==================== */}
+      {receipt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-80 shadow-2xl">
+            {/* Area yang dicetak */}
+            <div id="area-struk" className="font-mono text-sm text-gray-800">
+              <div className="text-center mb-3">
+                <p className="font-bold text-base">☕ COFFEE SHOP SAYA</p>
+                <p className="text-xs">Jl. Contoh No. 123, Gunung Tua</p>
+                <p className="text-xs">Telp: 0812-3456-7890</p>
+              </div>
+              <div className="border-t border-b border-dashed py-2 my-2 text-xs">
+                <p>{receipt.invoice}</p>
+                <p>{receipt.date}</p>
+              </div>
+              {receipt.items.map((item) => (
+                <div key={item.id} className="flex justify-between text-xs mb-1">
+                  <span>{item.name} x{item.qty}</span>
+                  <span>Rp {(item.price * item.qty).toLocaleString('id-ID')}</span>
+                </div>
+              ))}
+              <div className="border-t border-dashed mt-2 pt-2 space-y-1 text-xs">
+                <div className="flex justify-between font-bold text-sm">
+                  <span>TOTAL</span>
+                  <span>Rp {receipt.total.toLocaleString('id-ID')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Bayar</span>
+                  <span>Rp {receipt.bayar.toLocaleString('id-ID')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Kembalian</span>
+                  <span>Rp {receipt.kembalian.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+              <p className="text-center text-xs mt-3">— Terima kasih! —</p>
+            </div>
+
+            {/* Tombol (tidak ikut tercetak) */}
+            <div className="flex gap-2 mt-4 print:hidden">
+              <button onClick={() => window.print()}
+                className="flex-1 bg-amber-700 hover:bg-amber-800 text-white rounded-xl py-3 font-semibold">
+                🖨️ Cetak
+              </button>
+              <button onClick={() => setReceipt(null)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 font-semibold">
+                Transaksi Baru
               </button>
             </div>
           </div>
