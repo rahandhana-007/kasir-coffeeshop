@@ -138,7 +138,8 @@ export default function KasirPage() {
     setPayAmount('')
     setShowPayment(false)
     setSaving(false)
-
+  }
+  
   // Hitung total
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
 
