@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function KasirPage() {
   const router = useRouter()
@@ -181,22 +182,24 @@ export default function KasirPage() {
           ))}
         </div>
 
-        {/* Grid menu */}
+         {/* Grid menu */}
         {loading ? (
           <p className="text-amber-700">Memuat menu...</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredProducts.map((product) => (
-              <button key={product.id}
-                onClick={() => addToCart(product)}   // ← BARU: klik = masuk keranjang
-                className="bg-white rounded-xl shadow p-4 text-left hover:shadow-lg hover:scale-105 transition active:scale-95">
-                <div className="text-4xl mb-2">☕</div>
-                <p className="font-semibold text-gray-800">{product.name}</p>
-                <p className="text-xs text-gray-400">{product.categories?.name}</p>
-                <p className="text-amber-700 font-bold mt-1">
-                  Rp {product.price.toLocaleString('id-ID')}
-                </p>
-              </button>
+              <Card key={product.id}
+                onClick={() => addToCart(product)}
+                className="cursor-pointer hover:shadow-lg hover:scale-105 hover:border-amber-400 transition active:scale-95 select-none">
+                <CardContent className="p-4">
+                  <div className="text-4xl mb-2">☕</div>
+                  <p className="font-semibold text-gray-800">{product.name}</p>
+                  <p className="text-xs text-gray-400">{product.categories?.name}</p>
+                  <p className="text-amber-700 font-bold mt-1">
+                    Rp {product.price.toLocaleString('id-ID')}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
