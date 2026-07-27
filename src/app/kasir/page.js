@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 
 export default function KasirPage() {
   const router = useRouter()
@@ -328,58 +329,66 @@ export default function KasirPage() {
           </div>
         </DialogContent>
       </Dialog>
-            {/* ==================== DIALOG STRUK ==================== */}
-      {receipt && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-80 shadow-2xl">
-            {/* Area yang dicetak */}
-            <div id="area-struk" className="font-mono text-sm text-gray-800">
-              <div className="text-center mb-3">
-                <p className="font-bold text-base">☕ COFFEE SHOP SAYA</p>
-                <p className="text-xs">Jl. Contoh No. 123, Gunung Tua</p>
-                <p className="text-xs">Telp: 0812-3456-7890</p>
-              </div>
-              <div className="border-t border-b border-dashed py-2 my-2 text-xs">
-                <p>{receipt.invoice}</p>
-                <p>{receipt.date}</p>
-              </div>
-              {receipt.items.map((item) => (
-                <div key={item.id} className="flex justify-between text-xs mb-1">
-                  <span>{item.name} x{item.qty}</span>
-                  <span>Rp {(item.price * item.qty).toLocaleString('id-ID')}</span>
-                </div>
-              ))}
-              <div className="border-t border-dashed mt-2 pt-2 space-y-1 text-xs">
-                <div className="flex justify-between font-bold text-sm">
-                  <span>TOTAL</span>
-                  <span>Rp {receipt.total.toLocaleString('id-ID')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Bayar</span>
-                  <span>Rp {receipt.bayar.toLocaleString('id-ID')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Kembalian</span>
-                  <span>Rp {receipt.kembalian.toLocaleString('id-ID')}</span>
-                </div>
-              </div>
-              <p className="text-center text-xs mt-3">— Terima kasih! —</p>
-            </div>
+      {/* ==================== DIALOG STRUK ==================== */}
+      <Dialog open={!!receipt} onOpenChange={(o) => !o && setReceipt(null)}>
+        <DialogContent className="w-80">
+          {receipt && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-center">🧾 Struk Pembayaran</DialogTitle>
+              </DialogHeader>
 
-            {/* Tombol (tidak ikut tercetak) */}
-            <div className="flex gap-2 mt-4 print:hidden">
-              <button onClick={() => window.print()}
-                className="flex-1 bg-amber-700 hover:bg-amber-800 text-white rounded-xl py-3 font-semibold">
-                🖨️ Cetak
-              </button>
-              <button onClick={() => setReceipt(null)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 font-semibold">
-                Transaksi Baru
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              {/* Area yang dicetak */}
+              <div id="area-struk" className="font-mono text-sm text-gray-800">
+                <div className="text-center mb-3">
+                  <p className="font-bold text-base">☕ COFFEE SHOP SAYA</p>
+                  <p className="text-xs">Jl. Contoh No. 123, Gunung Tua</p>
+                  <p className="text-xs">Telp: 0812-3456-7890</p>
+                </div>
+                <div className="border-t border-b border-dashed py-2 my-2 text-xs">
+                  <p>{receipt.invoice}</p>
+                  <p>{receipt.date}</p>
+                </div>
+                {receipt.items.map((item) => (
+                  <div key={item.id} className="flex justify-between text-xs mb-1">
+                    <span>{item.name} x{item.qty}</span>
+                    <span>Rp {(item.price * item.qty).toLocaleString('id-ID')}</span>
+                  </div>
+                ))}
+                <div className="border-t border-dashed mt-2 pt-2 space-y-1 text-xs">
+                  <div className="flex justify-between font-bold text-sm">
+                    <span>TOTAL</span>
+                    <span>Rp {receipt.total.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Bayar</span>
+                    <span>Rp {receipt.bayar.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Kembalian</span>
+                    <span>Rp {receipt.kembalian.toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+                <p className="text-center text-xs mt-3">— Terima kasih! —</p>
+              </div>
+
+              <Separator />
+
+              {/* Tombol (tidak ikut tercetak) */}
+              <div className="flex gap-2 print:hidden">
+                <Button variant="outline" className="flex-1"
+                  onClick={() => window.print()}>
+                  🖨️ Cetak
+                </Button>
+                <Button className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={() => setReceipt(null)}>
+                  Transaksi Baru
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
       </div>
     </main>
   )
