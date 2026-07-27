@@ -35,7 +35,8 @@ export default function Navbar() {
   if (role === 'admin') {
     menu.push(
       { href: '/admin/produk', label: '📦 Produk' },
-      { href: '/admin/laporan', label: '📊 Laporan' }
+      { href: '/admin/laporan', label: '📊 Laporan' },
+      { href: '/admin/pegawai', label: '👥 Pegawai' }
     )
   }
 

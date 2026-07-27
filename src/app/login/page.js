@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -75,6 +76,11 @@ export default function LoginPage() {
             >
               {loading ? 'Memproses...' : 'Masuk'}
             </Button>
+                        <p className="text-center text-sm text-gray-500">
+              <Link href="/login-pegawai" className="underline hover:text-amber-700">
+                Login pegawai (nama & PIN) →
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>
