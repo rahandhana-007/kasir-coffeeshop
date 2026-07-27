@@ -43,6 +43,22 @@ export async function middleware(request) {
     return NextResponse.redirect(url)
   }
 
+  // Sudah login, tapi bukan admin, mau buka /admin → usir ke /kasir
+  if (user && path.startsWith('/admin')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/kasir'
+      return NextResponse.redirect(url)
+    }
+  }
+
+
   // Sudah login tapi buka /login → langsung antar ke /kasir
   if (user && path === '/login') {
     const url = request.nextUrl.clone()

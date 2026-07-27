@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
@@ -6,6 +7,20 @@ import { createClient } from '@/lib/supabase'
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
+  const [role, setRole] = useState(null)
+
+  useEffect(() => {
+    async function getRole() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('profiles').select('role').eq('id', user.id).single()
+        setRole(data?.role || 'kasir')
+      }
+    }
+    getRole()
+  }, [])
 
   async function handleLogout() {
     const supabase = createClient()
@@ -13,11 +28,16 @@ export default function Navbar() {
     router.push('/login')
   }
 
-  const menu = [
-    { href: '/kasir', label: '🛒 Kasir' },
-    { href: '/admin/produk', label: '📦 Produk' },
-    { href: '/admin/laporan', label: '📊 Laporan' },
-  ]
+  // Menu dasar untuk semua orang
+  const menu = [{ href: '/kasir', label: '🛒 Kasir' }]
+
+  // Menu tambahan khusus admin
+  if (role === 'admin') {
+    menu.push(
+      { href: '/admin/produk', label: '📦 Produk' },
+      { href: '/admin/laporan', label: '📊 Laporan' }
+    )
+  }
 
   return (
     <nav className="bg-amber-900 text-white px-6 py-3 flex items-center gap-2">
