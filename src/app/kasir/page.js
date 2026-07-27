@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export default function KasirPage() {
   const router = useRouter()
@@ -15,6 +18,7 @@ export default function KasirPage() {
   const [payAmount, setPayAmount] = useState('')        // uang yang diterima
   const [saving, setSaving] = useState(false)           // sedang menyimpan?
   const [receipt, setReceipt] = useState(null) // data struk transaksi terakhir
+  
 
   useEffect(() => {
     async function fetchData() {
@@ -251,75 +255,76 @@ export default function KasirPage() {
         </div>
       </div>
             {/* ==================== DIALOG PEMBAYARAN ==================== */}
-      {showPayment && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-96 shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">💵 Pembayaran</h3>
+            {/* ==================== DIALOG PEMBAYARAN ==================== */}
+      <Dialog open={showPayment} onOpenChange={(open) => {
+        if (!open) { setShowPayment(false); setPayAmount('') }
+      }}>
+        <DialogContent className="w-96">
+          <DialogHeader>
+            <DialogTitle>💵 Pembayaran</DialogTitle>
+          </DialogHeader>
 
-            <div className="bg-amber-50 rounded-lg p-4 mb-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Total belanja</span>
-                <span className="font-bold text-lg text-amber-800">
-                  Rp {total.toLocaleString('id-ID')}
-                </span>
-              </div>
+          <div className="bg-amber-50 rounded-lg p-4">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Total belanja</span>
+              <span className="font-bold text-lg text-amber-800">
+                Rp {total.toLocaleString('id-ID')}
+              </span>
             </div>
+          </div>
 
+          <div>
             <label className="text-sm font-medium text-gray-600">Uang diterima</label>
-            <input
+            <Input
               type="number"
               autoFocus
               value={payAmount}
               onChange={(e) => setPayAmount(e.target.value)}
               placeholder="Contoh: 50000"
-              className="w-full border-2 border-amber-300 rounded-lg p-3 text-xl font-bold mt-1 mb-2"
+              className="text-xl font-bold mt-1"
             />
-
-            {/* Tombol uang cepat */}
-            <div className="flex gap-2 mb-4">
-              <button onClick={() => setPayAmount(String(total))}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-xs font-medium">
-                Uang Pas
-              </button>
-              {[20000, 50000, 100000].map((nominal) => (
-                <button key={nominal} onClick={() => setPayAmount(String(nominal))}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-xs font-medium">
-                  {nominal / 1000}rb
-                </button>
-              ))}
-            </div>
-
-            {/* Kembalian */}
-            {payAmount && parseInt(payAmount) >= total && (
-              <div className="flex justify-between bg-green-50 rounded-lg p-3 mb-4">
-                <span className="text-sm text-gray-600">Kembalian</span>
-                <span className="font-bold text-green-700">
-                  Rp {(parseInt(payAmount) - total).toLocaleString('id-ID')}
-                </span>
-              </div>
-            )}
-            {payAmount && parseInt(payAmount) < total && (
-              <p className="text-red-500 text-sm mb-4">
-                ⚠️ Uang kurang Rp {(total - parseInt(payAmount)).toLocaleString('id-ID')}
-              </p>
-            )}
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => { setShowPayment(false); setPayAmount('') }}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 rounded-xl py-3 font-semibold">
-                Batal
-              </button>
-              <button
-                onClick={simpanTransaksi}
-                disabled={!payAmount || parseInt(payAmount) < total || saving}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-xl py-3 font-bold">
-                {saving ? 'Menyimpan...' : 'Konfirmasi'}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" className="flex-1"
+              onClick={() => setPayAmount(String(total))}>
+              Uang Pas
+            </Button>
+            {[20000, 50000, 100000].map((nominal) => (
+              <Button key={nominal} variant="secondary" size="sm" className="flex-1"
+                onClick={() => setPayAmount(String(nominal))}>
+                {nominal / 1000}rb
+              </Button>
+            ))}
+          </div>
+
+          {payAmount && parseInt(payAmount) >= total && (
+            <div className="flex justify-between bg-green-50 rounded-lg p-3">
+              <span className="text-sm text-gray-600">Kembalian</span>
+              <span className="font-bold text-green-700">
+                Rp {(parseInt(payAmount) - total).toLocaleString('id-ID')}
+              </span>
+            </div>
+          )}
+          {payAmount && parseInt(payAmount) < total && (
+            <p className="text-red-500 text-sm">
+              ⚠️ Uang kurang Rp {(total - parseInt(payAmount)).toLocaleString('id-ID')}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1"
+              onClick={() => { setShowPayment(false); setPayAmount('') }}>
+              Batal
+            </Button>
+            <Button className="flex-1 bg-green-600 hover:bg-green-700"
+              onClick={simpanTransaksi}
+              disabled={!payAmount || parseInt(payAmount) < total || saving}>
+              {saving ? 'Menyimpan...' : 'Konfirmasi'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
             {/* ==================== DIALOG STRUK ==================== */}
       {receipt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
