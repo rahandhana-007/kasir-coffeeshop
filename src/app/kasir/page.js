@@ -20,6 +20,7 @@ export default function KasirPage() {
   const [payAmount, setPayAmount] = useState('')        // uang yang diterima
   const [saving, setSaving] = useState(false)           // sedang menyimpan?
   const [receipt, setReceipt] = useState(null) // data struk transaksi terakhir
+  const [showCart, setShowCart] = useState(false) // panel keranjang di HP
   
 
   useEffect(() => {
@@ -156,15 +157,16 @@ export default function KasirPage() {
       : products.filter((p) => p.category_id === selectedCategory)
 
   return (
-    <main className="min-h-screen bg-amber-50 flex">
+<main className="min-h-screen bg-amber-50 flex flex-col">
     <Navbar />
-      <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col md:flex-row flex-1 md:overflow-hidden">
       {/* ==================== KIRI: MENU ==================== */}
-      <div className="flex-1 p-6 overflow-y-auto">
-                <h1 className="text-2xl font-bold text-amber-900 mb-6">☕ Kasir Coffee Shop</h1>
+      <div className="flex-1 p-4 md:p-6 overflow-y-auto pb-28 md:pb-6">
+                <h1 className="text-xl md:text-2xl font-bold text-amber-900 mb-4">☕ Kasir Coffee Shop</h1>
+                
 
         {/* Filter kategori */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+<div className="flex gap-2 mb-4 overflow-x-auto pb-2 -mx-1 px-1">
           <button onClick={() => setSelectedCategory('semua')}
             className={`px-4 py-2 rounded-full text-sm font-medium ${
               selectedCategory === 'semua'
@@ -172,9 +174,9 @@ export default function KasirPage() {
                 : 'bg-white text-amber-900 border border-amber-300'}`}>
             Semua
           </button>
-          {categories.map((cat) => (
+           {categories.map((cat) => (
             <button key={cat.id} onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium ${
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap shrink-0 ${
                 selectedCategory === cat.id
                   ? 'bg-amber-700 text-white'
                   : 'bg-white text-amber-900 border border-amber-300'}`}>
@@ -187,19 +189,19 @@ export default function KasirPage() {
         {loading ? (
           <p className="text-amber-700">Memuat menu...</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {filteredProducts.map((product) => (
               <Card key={product.id}
                 onClick={() => addToCart(product)}
                 className="cursor-pointer hover:shadow-lg hover:scale-105 hover:border-amber-400 transition active:scale-95 select-none">
-                <CardContent className="p-4">
-                  <div className="text-4xl mb-2">☕</div>
-                  <p className="font-semibold text-gray-800">{product.name}</p>
-                  <p className="text-xs text-gray-400">{product.categories?.name}</p>
-                  <p className="text-amber-700 font-bold mt-1">
-                    Rp {product.price.toLocaleString('id-ID')}
-                  </p>
-                </CardContent>
+                <CardContent className="p-3">
+                 <div className="text-2xl mb-1">☕</div>
+                 <p className="font-semibold text-sm text-gray-800">{product.name}</p>
+                 <p className="text-xs text-gray-400">{product.categories?.name}</p>
+                 <p className="text-amber-700 font-bold text-sm mt-1">
+                 Rp {product.price.toLocaleString('id-ID')}
+               </p>
+              </CardContent>
               </Card>
             ))}
           </div>
@@ -207,13 +209,13 @@ export default function KasirPage() {
       </div>
 
       {/* ==================== KANAN: KERANJANG ==================== */}
-      <div className="w-96 bg-white shadow-xl p-6 flex flex-col">
+        <div className="hidden md:flex w-96 bg-white shadow-xl p-6 flex-col shrink-0">  
         <h2 className="text-lg font-bold text-gray-800 mb-4">
           🛒 Pesanan ({cart.reduce((s, i) => s + i.qty, 0)} item)
         </h2>
 
         {/* Daftar item */}
-        <div className="flex-1 overflow-y-auto space-y-3">
+        <div className="flex-1 overflow-y-auto space-y-3 max-h-64 md:max-h-none">
           {cart.length === 0 ? (
             <p className="text-gray-400 text-sm text-center mt-10">
               Keranjang kosong.<br />Klik menu untuk menambahkan.
@@ -258,7 +260,61 @@ export default function KasirPage() {
           </button>
         </div>
       </div>
-            {/* ==================== DIALOG PEMBAYARAN ==================== */}
+
+            {/* ==================== BAR KERANJANG MOBILE ==================== */}
+      {cart.length > 0 && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl p-3 flex items-center gap-3 z-40">
+          <button onClick={() => setShowCart(true)} className="flex-1 text-left">
+            <p className="text-xs text-gray-500">
+              🛒 {cart.reduce((s, i) => s + i.qty, 0)} item — ketuk untuk lihat
+            </p>
+            <p className="text-lg font-bold text-amber-800">
+              Rp {total.toLocaleString('id-ID')}
+            </p>
+          </button>
+          <Button className="bg-green-600 hover:bg-green-700 h-12 px-6 font-bold"
+            onClick={() => setShowPayment(true)}>
+            💵 Bayar
+          </Button>
+        </div>
+      )}
+
+      {/* ==================== DIALOG KERANJANG MOBILE ==================== */}
+      <Dialog open={showCart} onOpenChange={setShowCart}>
+        <DialogContent className="w-[92vw] max-w-sm">
+          <DialogHeader>
+            <DialogTitle>🛒 Pesanan ({cart.reduce((s, i) => s + i.qty, 0)} item)</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-72 overflow-y-auto space-y-3">
+            {cart.map((item) => (
+              <div key={item.id} className="flex items-center gap-2 border-b pb-2">
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{item.name}</p>
+                  <p className="text-xs text-gray-500">
+                    Rp {item.price.toLocaleString('id-ID')} × {item.qty}
+                  </p>
+                </div>
+                <button onClick={() => changeQty(item.id, -1)}
+                  className="w-9 h-9 rounded-full bg-gray-200 font-bold text-lg">−</button>
+                <span className="w-6 text-center font-semibold">{item.qty}</span>
+                <button onClick={() => changeQty(item.id, 1)}
+                  className="w-9 h-9 rounded-full bg-amber-700 text-white font-bold text-lg">+</button>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between items-center border-t pt-3">
+            <span className="text-gray-600">TOTAL</span>
+            <span className="text-xl font-bold text-amber-800">
+              Rp {total.toLocaleString('id-ID')}
+            </span>
+          </div>
+          <Button className="w-full bg-green-600 hover:bg-green-700 h-12 font-bold"
+            onClick={() => { setShowCart(false); setShowPayment(true) }}>
+            💵 Bayar
+          </Button>
+        </DialogContent>
+      </Dialog>
+            
             {/* ==================== DIALOG PEMBAYARAN ==================== */}
       <Dialog open={showPayment} onOpenChange={(open) => {
         if (!open) { setShowPayment(false); setPayAmount('') }

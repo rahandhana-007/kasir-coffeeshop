@@ -41,7 +41,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-amber-900 text-white px-6 py-3 flex items-center gap-2">
+     <nav className="bg-amber-900 text-white px-4 py-3 flex items-center gap-2 flex-wrap">
       <span className="font-bold mr-4">☕ Coffee Shop</span>
       {menu.map((m) => (
         <Link key={m.href} href={m.href}

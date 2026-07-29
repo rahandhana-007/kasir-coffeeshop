@@ -71,5 +71,5 @@ export async function middleware(request) {
 
 // Tentukan halaman mana saja yang dilewati satpam ini
 export const config = {
-  matcher: ['/kasir/:path*', '/admin/:path*', '/login'],
+  matcher: ['/kasir/:path*', '/admin/:path*', '/login', '/login-pegawai']
 }
