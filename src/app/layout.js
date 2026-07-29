@@ -11,7 +11,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-eexport const metadata = {
+export const metadata = {
   title: {
     default: "Kasir Coffee Shop",
     template: "%s | Kasir Coffee Shop",
